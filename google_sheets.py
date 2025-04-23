@@ -25,7 +25,8 @@ def save_post(sheet, post):
 
     if fingerprint not in existing_fingerprints:
         matched_kw = post.get('matched_keyword', 'n/a')
+        hashtags = post.get('hashtags', 'n/a')
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        sheet.append_row([timestamp, post['link'], post['text'], post['author'], matched_kw])
+        sheet.append_row([timestamp, post['link'], post['text'], post['author'], matched_kw, hashtags])
         return True
     return False

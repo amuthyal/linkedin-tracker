@@ -4,6 +4,8 @@ from notifier import send_email
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import logging
+import difflib
+import re
 
 # Set up error logging
 logging.basicConfig(
@@ -16,67 +18,50 @@ def load_keywords():
     with open("keywords.txt") as f:
         return [line.strip() for line in f.readlines()]
 
-# Expanded filtering for non-hiring posts
+# Filter out posts not related to hiring
 skip_if_contains = [
-    "my interview experience",
-    "accepted to harvard",
-    "my story",
-    "debugging my limits",
-    "gofundme",
-    "donate",
-    "grateful for the opportunity",
-    "scholarship",
-    "financial aid",
-    "got cut from my job",
-    "meta interview",
-    "fundraising",
-    "my journey",
-    "ask anything",
-    "internship roommate",
-    "roomie",
-    "things to do in",
-    "moving to seattle",
-    "student intern tips",
-    "places to eat",
-    "travel guide",
-    "power point for your reference",
-    "what to bring",
-    "living in seattle",
-    "finding housing",
-    "future of hiring",
-    "death of opportunity",
-    "hirevue",
-    "fair ai",
-    "ai is deciding",
-    "invisible gatekeepers",
-    "ai and hiring bias",
-    "scored people based on",
-    "voice and facial movements",
-    "accent-based rejection",
-    "poster exhibit",
-    "presented my project",
-    "deep learning course",
-    "vocalvision",
-    "this project is close to my heart",
-    "academic project",
-    "image captioning model",
-    "professor support",
-    "rewarding experience",
-    "coursework",
-    "final year project",
-    "capstone"
+    "my interview experience", "accepted to harvard", "gofundme", "donate",
+    "poster exhibit", "capstone", "deep learning course", "vocalvision",
+    "debugging my limits", "professor support", "fundraising", "meta interview",
+    "travel guide", "student intern", "moving to seattle", "ask anything",
+    "rewarding experience", "hirevue", "ai is deciding", "future of hiring",
+    "what to bring", "living in seattle", "finding housing", "power point for your reference"
+]
 
-
+# Only allow these software-related job roles
+target_roles = [
+    "software engineer", "software developer", "sde", "sde i", "sde ii", "sde iii",
+    "frontend developer", "front end developer", "full stack developer", "fullstack developer",
+    "senior software engineer", "software development engineer"
 ]
 
 def should_skip(text):
     return any(phrase in text for phrase in skip_if_contains)
 
-def get_match(text, keywords):
+def get_match(text, keywords, threshold=0.8):
+    words = text.split()
     for kw in keywords:
         if kw in text:
-            return kw
-    return None
+            return kw, "exact"
+        for word in words:
+            ratio = difflib.SequenceMatcher(None, kw, word).ratio()
+            if ratio >= threshold:
+                return kw, f"fuzzy ({word}, {ratio:.2f})"
+    return None, None
+
+def matches_role(text, roles, threshold=0.8):
+    words = text.lower().split()
+    for role in roles:
+        role_words = role.split()
+        for i in range(len(words) - len(role_words) + 1):
+            window = " ".join(words[i:i+len(role_words)])
+            ratio = difflib.SequenceMatcher(None, role, window).ratio()
+            if ratio >= threshold:
+                return True
+    return False
+
+def extract_hashtags(text):
+    return " ".join(re.findall(r"#\w+", text)) or "n/a"
 
 def main():
     print("\n🚀 Starting LinkedIn Tracker...")
@@ -105,10 +90,14 @@ def main():
             print("🚫 Skipping post — flagged as non-hiring content.")
             continue
 
-        matched_kw = get_match(text, keywords)
+        matched_kw, match_type = get_match(text, keywords)
         if matched_kw:
-            print(f"✔️ Match found for keyword '{matched_kw}' in post:", text[:100])
+            if not matches_role(text, target_roles):
+                print(f"❌ Skipping post — role not relevant:\n{text[:100]}")
+                continue
+            print(f"✔️ Match ({match_type}) for keyword '{matched_kw}' in post:", text[:100])
             post['matched_keyword'] = matched_kw
+            post['hashtags'] = extract_hashtags(post['text'])
             matched_posts.append(post)
 
     print(f"📄 Found {len(matched_posts)} post(s) matching keywords.")
