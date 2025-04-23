@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment
+.env
+venv/
+env/
+
+# Google API credentials
+credentials.json
+
+# Mac system files
+.DS_Store
+
+# IDE/editor config
+.vscode/
+.idea/
+*.swp
