@@ -1,119 +1,112 @@
-# 🔍 LinkedIn Hiring Tracker
 
-This project is an automated tracker that scans your LinkedIn feed for job posts using targeted hiring keywords and filters. It extracts relevant posts (such as those hiring **software developers, SDEs, frontend/full stack engineers**) and saves them to a connected Google Sheet. It can also send email notifications when new relevant posts are found.
+# 🧠 LinkedIn Job Post Tracker
+
+A Python-based tool that scrapes your LinkedIn feed for hiring-related posts, filters them by software roles, and saves the results to Google Sheets. You also get email notifications for newly detected job posts.
 
 ---
 
 ## 🚀 Features
 
-- ✅ Login to LinkedIn and scrape feed posts
-- ✅ Match posts using **fuzzy keyword detection** (e.g., “we'r hiring”, “join our team”)
-- ✅ Filter for **target roles only** (e.g., software engineer, SDE II, full stack developer)
-- ✅ Extract hashtags from each post
-- ✅ Store posts in a **Google Sheet** with timestamp, text, author, keyword, and hashtags
-- ✅ Avoid duplicates using fingerprinting
-- ✅ Remove false positives and off-topic roles using a cleanup script
-- ✅ Send optional **email notifications** for new matches
+- ✅ Automatically logs into LinkedIn using secure `.env` credentials
+- 🔍 Scrapes feed for posts containing hiring-related keywords
+- 🎯 Filters for **software-related job roles** (e.g., SDE, Full Stack, Frontend)
+- 🚫 Skips irrelevant or personal story posts (e.g., "my journey", "scholarship")
+- 📄 Saves unique posts to a **Google Sheet**
+- ✉️ Sends **email notifications** for new matches
 
 ---
 
-## 📂 Project Structure
+## 📦 Tech Stack
 
-```
-linkedin-tracker/
-│
-├── main.py                    # Main script to run the tracker
-├── linkedin_scraper.py       # LinkedIn login and post scraping logic
-├── google_sheets.py          # Google Sheets integration and post saving
-├── notifier.py               # Optional email notifier
-├── credentials.json          # Google Service Account credentials
-├── keywords.txt              # List of hiring-related keywords (one per line)
-├── cleanup.py                # One-time script to remove irrelevant rows from sheet
-└── README.md                 # This file
-```
+- Python + Selenium (for scraping)
+- Google Sheets API via `gspread`
+- `.env` for credentials (via `python-dotenv`)
+- Gmail or SMTP for email alerts (customizable)
+- OpenAI API (optional) for summarization or enrichment
 
 ---
 
-## 🧠 Prerequisites
+## ⚙️ Setup Instructions
 
-- Python 3.8+
-- Google Sheets API credentials
-- Google Chrome + ChromeDriver
-- Gmail App Password (if using email notifications)
+### 1. Clone the Repo
 
----
-
-## 📦 Setup Instructions
-
-### 1. Install dependencies
 ```bash
-pip install gspread oauth2client selenium
+git clone https://github.com/yourusername/linkedin-job-tracker.git
+cd linkedin-job-tracker
 ```
 
-### 2. Create `credentials.json` for Google Sheets API
+### 2. Install Dependencies
 
-Follow [this guide](https://gspread.readthedocs.io/en/latest/oauth2.html) to generate your `credentials.json`.
-
-### 3. Update `keywords.txt`
-
-Add relevant hiring phrases (one per line), e.g.:
-
+```bash
+pip install -r requirements.txt
 ```
+
+### 3. Setup `.env` File
+
+```env
+LINKEDIN_EMAIL=your_email@example.com
+LINKEDIN_PASSWORD=your_linkedin_password
+SENDER_EMAIL=your_email@gmail.com
+SENDER_PASSWORD=your_app_password
+RECEIVER_EMAIL=your_email@gmail.com
+```
+
+> ⚠️ Use an **app password** if using Gmail with 2FA enabled.
+
+### 4. Setup Google Sheets
+
+- Enable the **Google Sheets API** and download the `credentials.json` file from Google Cloud Console.
+- Place it in the root directory.
+
+### 5. Add Keywords
+
+Edit the `keywords.txt` file to include hiring-related phrases (one per line).
+
+```txt
 we are hiring
+we're hiring
 my team is hiring
 join our team
-open positions
-actively hiring
+hiring now
+software engineers wanted
 ```
 
 ---
 
-## 🛠️ Run the Tracker
+## ▶️ Running the Tracker
 
 ```bash
 python main.py
 ```
 
-The script will:
+---
 
-- Login to LinkedIn
-- Scrape the feed
-- Match posts using keywords and role titles
-- Save matches to Google Sheet
-- Send notifications (if enabled)
+## 📊 Output Example (Google Sheet Columns)
+
+| Timestamp           | Post Link                        | Text Sample          | Author         | Matched Keyword    | Hashtags     |
+|---------------------|----------------------------------|----------------------|----------------|---------------------|--------------|
+| 2025-04-23 14:52:03 | https://linkedin.com/...         | We're hiring a...    | John Doe       | we're hiring        | #hiring #tech|
 
 ---
 
-## 🧹 Clean Old or Irrelevant Posts
+## 📌 Disclaimer
 
-To remove posts that aren't about your target roles:
-```bash
-python cleanup.py
-```
-
-This will clean the Google Sheet by removing rows that:
-- Match known false positives
-- Don’t mention a valid software developer role
+> This tool is for **educational and personal use only**.  
+> **LinkedIn’s Terms of Service prohibit automated scraping or login automation.**  
+> Do not use this tool with professional or production accounts.  
+> Respect privacy, platform integrity, and data usage policies.
 
 ---
 
-## 📬 Email Notifications (Optional)
+## 💡 Future Improvements
 
-If enabled, emails are sent when new posts are saved.
-
-### Setup:
-- Enable 2FA in Gmail
-- Create an [App Password](https://myaccount.google.com/apppasswords)
-- Add your email and password in `notifier.py`
+- Add support for pagination and multi-page scraping
+- Use GraphQL endpoints (if ever accessible via API)
+- Enrich posts using OpenAI summarization
+- Frontend dashboard for visualization
 
 ---
 
-## 📄 License
+## 🧑‍💻 Author
 
-MIT License – use freely and modify as needed!
-
----
-
-## 👋 Contributions Welcome
-
-Feel free to fork, enhance, or submit a PR! This is an open-source tool designed to help job seekers stay ahead of new openings.
+Built with 💙 by [Akhila Muthyala](https://www.linkedin.com/in/akhila-muthyala-48b776209/)
